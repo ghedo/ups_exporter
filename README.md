@@ -31,9 +31,13 @@ endpoints produce an `error` sample and a non-zero exit code.
 | --- | --- | --- |
 | `--metrics-file` | `/var/lib/prometheus/ups.prom` | textfile to write |
 | `--namespace` | `network_ups_tools` | metric namespace prefix |
-| `--variables` | `battery.charge,battery.voltage,battery.voltage.nominal,input.voltage,input.voltage.nominal,ups.load,ups.status` | variables to export; empty exports every numeric one |
+| `--variables` | the 7 variables below | variables to export; empty exports every numeric one |
 | `--timeout` | `10` | seconds per upsc invocation |
 | `--version` | | print the version and exit |
+
+The default variables are `battery.charge`, `battery.voltage`,
+`battery.voltage.nominal`, `input.voltage`, `input.voltage.nominal`, `ups.load`
+and `ups.status`.
 
 ## Running
 
