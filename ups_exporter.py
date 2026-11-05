@@ -47,7 +47,6 @@
 # example by prometheus-ups-exporter.timer.
 
 import argparse
-import json
 import os
 import re
 import subprocess
@@ -116,8 +115,19 @@ def upsc(arguments, timeout):
 
 
 def list_variables(ups, timeout):
-    """Return (name, value) pairs for all variables of one UPS."""
-    return list(json.loads(upsc(['-j', ups], timeout)).items())
+    """Return (name, value) pairs for all variables of one UPS.
+
+    upsc prints one `name: value` pair per line. Variable names never
+    contain a colon, so the first ': ' separates the name from the
+    value. The plain text output is used instead of the -j JSON flag,
+    which only exists in NUT 2.8.5 and later.
+    """
+    variables = []
+    for line in upsc([ups], timeout).splitlines():
+        name, sep, value = line.partition(': ')
+        if sep:
+            variables.append((name, value.rstrip()))
+    return variables
 
 
 def convert_value(value):
