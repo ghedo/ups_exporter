@@ -9,9 +9,9 @@ can be configured, every sample carries a `server` (host:port) and a `ups`
 label.
 
 Unlike `nut_exporter`, which speaks the NUT protocol through the `go.nut`
-library, this exporter wraps the standard `upsc` client, which the NUT
-project maintains. A single timer run serves every endpoint through one
-textfile, so there is no new service or port to operate.
+library, this exporter wraps the standard `upsc` client, which the NUT project
+maintains. A single timer run serves every endpoint through one textfile, so
+there is no new service or port to operate.
 
 ## Requirements
 
@@ -65,5 +65,7 @@ Point the `node_exporter` textfile collector at the same directory:
 
 - one gauge per numeric NUT variable (e.g. `network_ups_tools_battery_charge`)
 - `ups_status{flag="..."}` for every status flag
-- `device_info` from the `device.*` variables
+- `device_info` from the `device.*` variables, falling back to
+  `ups.model`, `ups.mfr` and `ups.serial` for drivers that report
+  only the legacy set
 - `error` when an endpoint cannot be collected

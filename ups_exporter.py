@@ -59,16 +59,28 @@ __version__ = '0.1.0'
 DEFAULT_METRICS_FILE = '/var/lib/prometheus/ups.prom'
 DEFAULT_PORT = 3493
 DEFAULT_NAMESPACE = 'network_ups_tools'
+
 # Variables exported by default, matching nut_exporter.
 DEFAULT_VARIABLES = (
     'battery.charge,battery.voltage,battery.voltage.nominal,'
     'input.voltage,input.voltage.nominal,ups.load,ups.status'
 )
+
 # device.* variables that become device_info labels.
 DEVICE_INFO_LABELS = (
     'model', 'mfr', 'serial', 'type', 'description',
     'contact', 'location', 'part', 'macaddr',
 )
+
+# Some drivers report only these legacy variables instead of the
+# device.* equivalents, so they are used as a fallback. ups.type is
+# deliberately not covered: it holds the topology, a different
+# concept from device.type.
+LEGACY_DEVICE_VARIABLES = {
+    'ups.model': 'model',
+    'ups.mfr': 'mfr',
+    'ups.serial': 'serial',
+}
 
 # ups.status flags always exported, set to 0 when the server does not
 # report them.
@@ -209,6 +221,7 @@ def collect_endpoint(args, registry, gauges, upsname, host, port):
             return 'no variables reported by %s@%s' % (upsname, server)
 
         device = dict.fromkeys(DEVICE_INFO_LABELS, '')
+        legacy = {}
 
         def gauge_for(variable, labelnames):
             # All endpoints share one Gauge per variable.
@@ -230,6 +243,10 @@ def collect_endpoint(args, registry, gauges, upsname, host, port):
                 key = variable.split('.', 1)[1]
                 if key in device:
                     device[key] = value
+            else:
+                label = LEGACY_DEVICE_VARIABLES.get(variable)
+                if label is not None:
+                    legacy[label] = value
 
             if args.variable_filter and variable not in args.variable_filter:
                 continue
@@ -261,6 +278,12 @@ def collect_endpoint(args, registry, gauges, upsname, host, port):
             gauge_for(variable, ['server', 'ups']).labels(
                 server=server, ups=upsname
             ).set(number)
+
+        # Fall back to the legacy values for drivers that do not
+        # report device.*.
+        for label, value in legacy.items():
+            if not device[label]:
+                device[label] = value
 
         labels = dict(device)
         labels['server'] = server
