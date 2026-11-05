@@ -1,0 +1,11 @@
+[Unit]
+Description=Collect UPS metrics from NUT servers periodically
+
+[Timer]
+OnBootSec=10
+OnUnitActiveSec=60
+AccuracySec=1s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

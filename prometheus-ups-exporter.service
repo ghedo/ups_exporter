@@ -1,0 +1,13 @@
+[Unit]
+Description=Collect UPS metrics from NUT servers into a Prometheus textfile
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/default/prometheus-ups-exporter
+ExecStart=/usr/bin/python3 /usr/local/bin/ups_exporter.py $UPS_ENDPOINTS
+StateDirectory=prometheus
+
+[Install]
+WantedBy=multi-user.target
